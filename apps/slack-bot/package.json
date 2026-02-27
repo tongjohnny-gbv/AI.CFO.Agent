@@ -1,0 +1,25 @@
+{
+  "name": "slack-bot",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "echo 'no slack bot tests'",
+    "format": "prettier --check src"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.21.0",
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "@ai-cfo/db": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "prettier": "^3.3.3",
+    "@types/express": "^4.17.21"
+  }
+}

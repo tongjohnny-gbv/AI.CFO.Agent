@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MembershipRole {
+  owner
+  admin
+  cpa
+}
+
+enum MessageSource {
+  web
+  slack
+}
+
+enum UploadType {
+  gl
+  pl
+}
+
+model Org {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  memberships       Membership[]
+  slackIdentities   SlackIdentity[]
+  messages          Message[]
+  financialUploads  FinancialUpload[]
+  glRows            GLRow[]
+  monthlyPLs        MonthlyPL[]
+  insights          Insight[]
+  monthlyReports    MonthlyReport[]
+  contextNotes      ContextNote[]
+
+  @@map("orgs")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  memberships Membership[]
+
+  @@map("users")
+}
+
+model Membership {
+  userId String @map("user_id")
+  orgId  String @map("org_id")
+  role   MembershipRole
+
+  user User @relation(fields: [userId], references: [id])
+  org  Org  @relation(fields: [orgId], references: [id])
+
+  @@id([userId, orgId])
+  @@map("memberships")
+}
+
+model SlackInstallation {
+  id                 String   @id @default(cuid())
+  teamId             String   @map("team_id")
+  enterpriseId       String?  @map("enterprise_id")
+  botTokenEncrypted  String   @map("bot_token")
+  installedByUserId  String?  @map("installed_by_user_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@unique([teamId, enterpriseId])
+  @@map("slack_installations")
+}
+
+model SlackIdentity {
+  id             String         @id @default(cuid())
+  teamId         String         @map("team_id")
+  slackUserId    String         @map("slack_user_id")
+  orgId          String         @map("org_id")
+  membershipRole MembershipRole @map("membership_role")
+  active         Boolean        @default(true)
+
+  org Org @relation(fields: [orgId], references: [id])
+
+  @@unique([teamId, slackUserId, orgId])
+  @@map("slack_identities")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  orgId          String       @map("org_id")
+  source         MessageSource
+  userId         String?      @map("user_id")
+  slackChannelId String?      @map("slack_channel_id")
+  slackThreadTs  String?      @map("slack_thread_ts")
+  text           String
+  metadata       Json         @default("{}")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  org Org @relation(fields: [orgId], references: [id])
+
+  @@map("messages")
+}
+
+model FinancialUpload {
+  id          String   @id @default(cuid())
+  orgId       String   @map("org_id")
+  filename    String
+  type        UploadType
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  org Org @relation(fields: [orgId], references: [id])
+
+  @@map("financial_uploads")
+}
+
+model GLRow {
+  id          String   @id @default(cuid())
+  orgId       String   @map("org_id")
+  date        DateTime
+  accountName String   @map("account_name")
+  accountType String?  @map("account_type")
+  amount      Decimal
+  vendor      String?
+  memo        String?
+  raw         Json     @default("{}")
+
+  org Org @relation(fields: [orgId], references: [id])
+
+  @@map("gl_rows")
+}
+
+model MonthlyPL {
+  id          String   @id @default(cuid())
+  orgId       String   @map("org_id")
+  month       String
+  revenue     Decimal
+  cogs        Decimal
+  grossProfit Decimal  @map("gross_profit")
+  opex        Decimal
+  netIncome   Decimal  @map("net_income")
+  raw         Json     @default("{}")
+
+  org Org @relation(fields: [orgId], references: [id])
+
+  @@unique([orgId, month])
+  @@map("monthly_pl")
+}
+
+model Insight {
+  id        String   @id @default(cuid())
+  orgId     String   @map("org_id")
+  key       String
+  severity  String
+  title     String
+  detail    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  org Org @relation(fields: [orgId], references: [id])
+
+  @@map("insights")
+}
+
+model MonthlyReport {
+  id        String   @id @default(cuid())
+  orgId     String   @map("org_id")
+  month     String
+  content   Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  org Org @relation(fields: [orgId], references: [id])
+
+  @@unique([orgId, month])
+  @@map("monthly_reports")
+}
+
+model ContextNote {
+  id        String   @id @default(cuid())
+  orgId     String   @map("org_id")
+  note      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  org Org @relation(fields: [orgId], references: [id])
+
+  @@map("context_notes")
+}
