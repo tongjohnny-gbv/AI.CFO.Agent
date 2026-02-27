@@ -1,0 +1,5 @@
+date,account_name,account_type,amount,vendor,memo
+2024-01-05,Cash,asset,80000,,Opening balance
+2024-01-20,Payroll Expense,expense,-25000,Gusto,Payroll Jan
+2024-02-10,Cash,asset,62000,,Month end balance
+2024-02-15,Tax Withholding,liability,-12000,IRS,Q1 estimate

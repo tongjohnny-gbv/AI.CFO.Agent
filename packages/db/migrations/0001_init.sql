@@ -1,0 +1,1 @@
+-- Generated baseline schema for AI CFO Agent MVP. Use `pnpm --filter @ai-cfo/db prisma:migrate` in real env.
